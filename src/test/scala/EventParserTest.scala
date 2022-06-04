@@ -11,19 +11,19 @@ class EventParserTest extends WordSpec with Matchers {
     "valid event is supplied" should {
       "parse event correctly (matchState from .pdf)" in {
         EventParser.toEvent("0x781002") shouldEqual
-          Right(new Event(TeamOne(Amount(2)), TeamTwo(Amount(0)), PointScored(Amount(2)), ElapsedMatchTime(Duration(15, SECONDS)), FirstTeam))
+          Right(new Event(TeamOne(Amount(2)), TeamTwo(Amount(0)), PointScored(Amount(2)), ElapsedMatchTime(Duration(15, SECONDS)), FirstTeam, RawEvent("0x781002")))
 
         EventParser.toEvent("0xf0101f") shouldEqual
-          Right(new Event(TeamOne(Amount(2)), TeamTwo(Amount(3)), PointScored(Amount(3)), ElapsedMatchTime(Duration(30, SECONDS)), SecondTeam))
+          Right(new Event(TeamOne(Amount(2)), TeamTwo(Amount(3)), PointScored(Amount(3)), ElapsedMatchTime(Duration(30, SECONDS)), SecondTeam, RawEvent("0xf0101f")))
 
         EventParser.toEvent("0x1310c8a1") shouldEqual
-          Right(new Event(TeamOne(Amount(25)), TeamTwo(Amount(20)), PointScored(Amount(1)), ElapsedMatchTime(Duration(610, SECONDS)), FirstTeam))
+          Right(new Event(TeamOne(Amount(25)), TeamTwo(Amount(20)), PointScored(Amount(1)), ElapsedMatchTime(Duration(610, SECONDS)), FirstTeam, RawEvent("0x1310c8a1")))
 
         EventParser.toEvent("0x29f981a2") shouldEqual
-          Right(new Event(TeamOne(Amount(48)), TeamTwo(Amount(52)), PointScored(Amount(2)), ElapsedMatchTime(Duration(1343, SECONDS)), FirstTeam))
+          Right(new Event(TeamOne(Amount(48)), TeamTwo(Amount(52)), PointScored(Amount(2)), ElapsedMatchTime(Duration(1343, SECONDS)), FirstTeam, RawEvent("0x29f981a2")))
 
         EventParser.toEvent("0x48332327") shouldEqual
-          Right(new Event(TeamOne(Amount(100)), TeamTwo(Amount(100)), PointScored(Amount(3)), ElapsedMatchTime(Duration(2310, SECONDS)), SecondTeam))
+          Right(new Event(TeamOne(Amount(100)), TeamTwo(Amount(100)), PointScored(Amount(3)), ElapsedMatchTime(Duration(2310, SECONDS)), SecondTeam, RawEvent("0x48332327")))
       }
     }
 

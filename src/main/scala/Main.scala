@@ -18,6 +18,8 @@ object Main {
   *    MatchStateAccumulator.matchState.+(event: Event) -> add an Event
   *
   *    MatchStateAccumulator.inconsistentEvents         -> all inconsistency events collected during processing
+  *
+  * -> start point to discover: `processEvents()`
   * */
   def main(array: Array[String]): Unit = {
     println("Start processing event from [simple1.txt]")
