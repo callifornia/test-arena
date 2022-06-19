@@ -2,12 +2,12 @@
 
 Event(ElapsedMatchTime(15 seconds)  PointScored(Amount(2))  RawEvent(0x781002)  FirstTeam    TeamOne(Amount(2))  TeamTwo(Amount(0)))
 Event(ElapsedMatchTime(28 seconds)  PointScored(Amount(2))  RawEvent(0xe01016)  SecondTeam   TeamOne(Amount(2))  TeamTwo(Amount(2)))
-Event(ElapsedMatchTime(33 seconds)  PointScored(Amount(0))  RawEvent(0x1081014)  SecondTeam  TeamOne(Amount(2))  TeamTwo(Amount(2))) // we can ignore
+Event(ElapsedMatchTime(33 seconds)  PointScored(Amount(0))  RawEvent(0x1081014)  SecondTeam  TeamOne(Amount(2))  TeamTwo(Amount(2))) // wrong
 Event(ElapsedMatchTime(60 seconds)  PointScored(Amount(3))  RawEvent(0x1e0102f)  SecondTeam  TeamOne(Amount(2))  TeamTwo(Amount(5)))
 Event(ElapsedMatchTime(75 seconds)  PointScored(Amount(2))  RawEvent(0x258202a)  FirstTeam   TeamOne(Amount(4))  TeamTwo(Amount(5)))
 Event(ElapsedMatchTime(97 seconds)  PointScored(Amount(2))  RawEvent(0x308203e)  SecondTeam  TeamOne(Amount(4))  TeamTwo(Amount(7)))
-Event(ElapsedMatchTime(113 seconds)  PointScored(Amount(2))  RawEvent(0x388204e)  SecondTeam TeamOne(Amount(4))  TeamTwo(Amount(9)))  // duplicated event
-Event(ElapsedMatchTime(113 seconds)  PointScored(Amount(2))  RawEvent(0x388204e)  SecondTeam  TeamOne(Amount(4))  TeamTwo(Amount(9))) // can be ignored
+Event(ElapsedMatchTime(113 seconds)  PointScored(Amount(2))  RawEvent(0x388204e)  SecondTeam TeamOne(Amount(4))  TeamTwo(Amount(9)))  // wrong (duplication)
+Event(ElapsedMatchTime(113 seconds)  PointScored(Amount(2))  RawEvent(0x388204e)  SecondTeam  TeamOne(Amount(4))  TeamTwo(Amount(9)))
 Event(ElapsedMatchTime(122 seconds)  PointScored(Amount(3))  RawEvent(0x3d0384b)  FirstTeam   TeamOne(Amount(7))  TeamTwo(Amount(9)))
 Event(ElapsedMatchTime(143 seconds)  PointScored(Amount(2))  RawEvent(0x478385e)  SecondTeam  TeamOne(Amount(7))  TeamTwo(Amount(11)))
 
@@ -23,17 +23,25 @@ Event(ElapsedMatchTime(234 seconds)  PointScored(Amount(0))  RawEvent(0x750706c)
 Event(ElapsedMatchTime(251 seconds)  PointScored(Amount(2))  RawEvent(0x7d8507e)  SecondTeam  TeamOne(Amount(10))  TeamTwo(Amount(15)))
 Event(ElapsedMatchTime(295 seconds)  PointScored(Amount(2))  RawEvent(0x938608e)  SecondTeam  TeamOne(Amount(12))  TeamTwo(Amount(17)))
 Event(ElapsedMatchTime(279 seconds)  PointScored(Amount(2))  RawEvent(0x8b8607a)  FirstTeam   TeamOne(Amount(12))  TeamTwo(Amount(15)))
-
-
 Event(ElapsedMatchTime(322 seconds)  PointScored(Amount(2))  RawEvent(0xa10609e)  SecondTeam  TeamOne(Amount(12))  TeamTwo(Amount(19)))
+
+
+// valid scope
 Event(ElapsedMatchTime(369 seconds)  PointScored(Amount(2))  RawEvent(0xb8870a2)  FirstTeam   TeamOne(Amount(14))  TeamTwo(Amount(20)))
 Event(ElapsedMatchTime(393 seconds)  PointScored(Amount(2))  RawEvent(0xc4870b6)  SecondTeam  TeamOne(Amount(14))  TeamTwo(Amount(22)))
 Event(ElapsedMatchTime(408 seconds)  PointScored(Amount(2))  RawEvent(0xcc070c6)  SecondTeam  TeamOne(Amount(14))  TeamTwo(Amount(24)))
+// invalid
 Event(ElapsedMatchTime(1500 seconds) PointScored(Amount(3))  RawEvent(0x2ee74753) FirstTeam   TeamOne(Amount(232))  TeamTwo(Amount(234)))
+
+// valid scope
 Event(ElapsedMatchTime(426 seconds)  PointScored(Amount(2))  RawEvent(0xd5080c2)  FirstTeam   TeamOne(Amount(16))  TeamTwo(Amount(24)))
 Event(ElapsedMatchTime(446 seconds)  PointScored(Amount(2))  RawEvent(0xdf080d6)  SecondTeam  TeamOne(Amount(16))  TeamTwo(Amount(26)))
 Event(ElapsedMatchTime(456 seconds)  PointScored(Amount(3))  RawEvent(0xe4098d3)  FirstTeam   TeamOne(Amount(19))  TeamTwo(Amount(26)))
+
+// invalid need new validation
 Event(ElapsedMatchTime(472 seconds)  PointScored(Amount(2))  RawEvent(0xec098f6)  SecondTeam  TeamOne(Amount(19))  TeamTwo(Amount(30)))
+
+// valid scope
 Event(ElapsedMatchTime(505 seconds)  PointScored(Amount(2))  RawEvent(0xfc8a8e2)  FirstTeam   TeamOne(Amount(21))  TeamTwo(Amount(28)))
 Event(ElapsedMatchTime(533 seconds)  PointScored(Amount(1))  RawEvent(0x10a8a8ed) SecondTeam  TeamOne(Amount(21))  TeamTwo(Amount(29)))
 Event(ElapsedMatchTime(560 seconds)  PointScored(Amount(2))  RawEvent(0x1180b8ea) FirstTeam   TeamOne(Amount(23))  TeamTwo(Amount(29)))

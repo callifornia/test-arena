@@ -37,7 +37,7 @@ object Main {
 
       case Left(_: EventWithZeroScored) => accumulator + event
       case Left(_: DuplicatedEvent) => accumulator
-      case Left(validationError) => accumulator + (event, validationError)
+      case Left(validationError) => accumulator + validationError
     }
 
 

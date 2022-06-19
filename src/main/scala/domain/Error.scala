@@ -7,7 +7,9 @@ case class BitFormatTransformationFailed(ex: Exception) extends Error
 case class InconsistentBitPattern(ex: Exception, event: EventInBitFormat) extends Error
 case class RawEventDataCorrupted(value: String, ex: Exception) extends Error
 
-sealed trait ValidationError extends Error
+sealed trait ValidationError extends Error {
+  def event: Event
+}
 case class EventInWrongOrder(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class EventWithZeroScored(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class EventWithZeroAndWrongCalculation(event: Event, latestEvent: Option[Event]) extends ValidationError

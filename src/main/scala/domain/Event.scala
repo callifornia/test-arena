@@ -30,10 +30,12 @@ case class Amount(value: Int) extends AnyVal {
 }
 
 case class MatchState(events: Seq[Event]) {
+  def ++(anotherState: MatchState): MatchState = copy(events = (events ++ anotherState.events).distinct)
   def +(event: Event): MatchState = copy(events :+ event)
   def latest(): Option[Event] = events.lastOption
   def latest(n: Int): MatchState = copy(events.takeRight(n))
   def allEvents(): Seq[Event] = events
+  def isLessThanOne(): Boolean = events.size <= 1
 }
 
 
@@ -121,16 +123,36 @@ object ParsedEventsResult {
 }
 
 
-case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Map[Event, Error]) {
-  def +(event: Event): MatchStateAccumulator = copy(matchState = matchState + event, inconsistentEvents = inconsistentEvents - event)
-  def +(event: Event, error: Error): MatchStateAccumulator = copy(inconsistentEvents = inconsistentEvents + (event -> error))
+case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Seq[ValidationError]) {
+
+  def +(maybeEvent: Either[ValidationError, Event]): MatchStateAccumulator =
+    maybeEvent match {
+      case Left(inconsistentEvent) => copy(inconsistentEvents = inconsistentEvents :+ inconsistentEvent)
+      case Right(event) => copy(matchState = matchState + event)
+    }
+
+  def +(inconsistentEvent: ValidationError): MatchStateAccumulator = this.+(Left(inconsistentEvent))
+  def +(event: Event): MatchStateAccumulator =
+    copy(matchState = matchState + event, inconsistentEvents = inconsistentEvents.filterNot(_.event == event))
+
+  def ++(anotherStateAccumulator: MatchStateAccumulator): MatchStateAccumulator =
+    copy(
+      matchState = matchState ++ anotherStateAccumulator.matchState,
+      inconsistentEvents =
+        (inconsistentEvents ++ anotherStateAccumulator.inconsistentEvents)
+          .distinct
+          .filterNot(e => (anotherStateAccumulator.matchState.events ++ matchState.allEvents()).contains(e.event))
+          )
+
+
   def containsUnordered(): Boolean = collectUnordered().nonEmpty
-  def collectUnordered(): List[Event] = inconsistentEvents.values.collect{case e: EventInWrongOrder  => e.event}.toList.sortBy(_.elapsedMatchTime.duration)
+  def collectUnordered(): List[Event] =
+    inconsistentEvents.collect{case e: EventInWrongOrder  => e.event}.toList/*.sortBy(_.elapsedMatchTime.duration)*/
 }
 
 object MatchStateAccumulator {
   def empty: MatchStateAccumulator =
-    MatchStateAccumulator(MatchState.empty, Map.empty[Event, Error])
+    MatchStateAccumulator(MatchState.empty, Seq.empty[ValidationError])
 }
 
 

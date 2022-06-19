@@ -4,13 +4,12 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.stream.IOResult
 import akka.stream.scaladsl.{FileIO, Flow, Framing, Sink, Source}
 import akka.util.ByteString
-import domain.{Event, MatchStateAccumulator, ValidationError}
+import domain.{Event, EventInWrongOrder, MatchState, MatchStateAccumulator, ValidationError}
 
 import java.nio.file.Paths
 import scala.concurrent.Future
 import converter.Json._
 
-import scala.annotation.tailrec
 
 object MainStream {
 
@@ -42,15 +41,15 @@ object MainStream {
         var accumulator = MatchStateAccumulator.empty
         event =>
           EventValidationStreamWay.validate(event, accumulator.matchState) match {
-            case Left(e: ValidationError) =>
-              println("Event are not consistent: " + e)
-              accumulator = accumulator + (event, e)
-              Nil
 
-            case Right(consistentEvent) if accumulator.containsUnordered() =>
-              val (fixedEvents, accumulatorNewState) = tryToRecoverEventsOrder(accumulator.collectUnordered(), List.empty[Event], accumulator + consistentEvent)
-              accumulator = accumulatorNewState
-              consistentEvent :: fixedEvents
+            case Left(currentEvent: EventInWrongOrder) if accumulator.collectUnordered().size >= 3 =>
+              val newAccumulator = resetHeadEvent(accumulator + currentEvent)
+              accumulator = accumulator ++ newAccumulator
+              newAccumulator.matchState.allEvents()
+
+            case Left(e: ValidationError) =>
+              accumulator = accumulator + e
+              Nil
 
             case Right(consistentEvent) =>
               accumulator = accumulator + consistentEvent
@@ -59,28 +58,18 @@ object MainStream {
       }
 
 
-  @tailrec
-  def tryToRecoverEventsOrder(unorderedEvents: List[Event],
-                              fixedEvents: List[Event],
-                              accumulator: MatchStateAccumulator): (List[Event], MatchStateAccumulator) =
-    unorderedEvents match {
-      case Nil => (fixedEvents, accumulator)
-      case list =>
-        list
-          .map(e => EventValidationStreamWay.validate(e, accumulator.matchState))
-          .collect {case Right(validEvent) => validEvent} match {
-          case Nil => (fixedEvents, accumulator)
-          case validEvents =>
-            val newStateAccumulator = validEvents.foldLeft(accumulator)(_ + _)
-            tryToRecoverEventsOrder(
-              newStateAccumulator.collectUnordered(),
-              fixedEvents ++ validEvents,
-              newStateAccumulator)
-
-        }
+  def resetHeadEvent(oldAccumulator: MatchStateAccumulator): MatchStateAccumulator =
+    oldAccumulator
+      .collectUnordered()
+      .takeRight(3)
+      .foldLeft(MatchStateAccumulator.empty)((acc, el) =>
+        acc + EventValidationStreamWay.validate(el, acc.matchState)) match {
+      case MatchStateAccumulator(event, error) if event.isLessThanOne() => MatchStateAccumulator(MatchState.empty, error)
+      case m@MatchStateAccumulator(_, _)                           => m
     }
 
-  val toJson: Flow[Event, String, NotUsed] = Flow[Event].map(_.toJsonValue.stringify)
+
+  val toJson: Flow[Event, String, NotUsed] = Flow[Event].map(_.toJsonValue.stringify).map(e => Console.GREEN + e + Console.RESET)
   val sink = Sink.foreach(println)
 
 

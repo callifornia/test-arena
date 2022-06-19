@@ -96,8 +96,16 @@ trait EventValidationStreamWay {
   private val isCorrectOrder: (Event, MatchState) => Either[ValidationError, Unit] =
     (event, matchState) => Either.cond(
       matchState.latest().exists(latestEvent =>
-        !(event.teamOne.amount != latestEvent.teamOne.amount &&
-          event.teamTwo.amount != latestEvent.teamTwo.amount)),
+        event.teamScored match {
+          case FirstTeam =>
+            event.teamTwo.amount == latestEvent.teamTwo.amount &&
+              event.teamOne.amount - latestEvent.teamOne.amount == event.pointScored.amount &&
+              event.pointScored.amount.value != 0
+          case SecondTeam =>
+            event.teamOne.amount == latestEvent.teamOne.amount &&
+              event.teamTwo.amount - latestEvent.teamTwo.amount == event.pointScored.amount &&
+              event.pointScored.amount.value != 0
+        }),
       (),
       EventInWrongOrder(event, matchState.latest()))
 
