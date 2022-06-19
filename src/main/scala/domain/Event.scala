@@ -146,8 +146,7 @@ case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Seq
 
 
   def containsUnordered(): Boolean = collectUnordered().nonEmpty
-  def collectUnordered(): List[Event] =
-    inconsistentEvents.collect{case e: EventInWrongOrder  => e.event}.toList/*.sortBy(_.elapsedMatchTime.duration)*/
+  def collectUnordered(amount: Int = Int.MaxValue): Seq[Event] = inconsistentEvents.collect{case e: EventInWrongOrder  => e.event}
 }
 
 object MatchStateAccumulator {

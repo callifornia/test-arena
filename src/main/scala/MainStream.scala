@@ -14,7 +14,7 @@ import converter.Json._
 object MainStream {
 
   implicit val system = ActorSystem(Behaviors.empty, "foo")
-
+  val amountsEventsToReset = 3
 
   val source: String => Source[String, Future[IOResult]] =
     fileName =>
@@ -42,8 +42,8 @@ object MainStream {
         event =>
           EventValidationStreamWay.validate(event, accumulator.matchState) match {
 
-            case Left(currentEvent: EventInWrongOrder) if accumulator.collectUnordered().size >= 3 =>
-              val newAccumulator = resetHeadEvent(accumulator + currentEvent)
+            case Left(currentEvent: EventInWrongOrder) if accumulator.collectUnordered().size >= amountsEventsToReset =>
+              val newAccumulator = resetHeadEvent(accumulator + currentEvent, amountsEventsToReset)
               accumulator = accumulator ++ newAccumulator
               newAccumulator.matchState.allEvents()
 
@@ -58,14 +58,13 @@ object MainStream {
       }
 
 
-  def resetHeadEvent(oldAccumulator: MatchStateAccumulator): MatchStateAccumulator =
+  def resetHeadEvent(oldAccumulator: MatchStateAccumulator, amountsEventsToReset: Int): MatchStateAccumulator =
     oldAccumulator
-      .collectUnordered()
-      .takeRight(3)
+      .collectUnordered(amountsEventsToReset)
       .foldLeft(MatchStateAccumulator.empty)((acc, el) =>
         acc + EventValidationStreamWay.validate(el, acc.matchState)) match {
       case MatchStateAccumulator(event, error) if event.isLessThanOne() => MatchStateAccumulator(MatchState.empty, error)
-      case m@MatchStateAccumulator(_, _)                           => m
+      case m@MatchStateAccumulator(_, _)                                => m
     }
 
 
