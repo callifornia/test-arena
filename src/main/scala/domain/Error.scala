@@ -2,7 +2,7 @@ package domain
 
 sealed trait Error
 case class ReadDataError(ex: Exception) extends Error
-case class FailedToDecodeEvent(ex: Exception) extends Error
+case class FailedToDecodeEvent(ex: Throwable) extends Error
 case class BitFormatTransformationFailed(ex: Exception) extends Error
 case class InconsistentBitPattern(ex: Exception, event: EventInBitFormat) extends Error
 case class RawEventDataCorrupted(value: String, ex: Exception) extends Error

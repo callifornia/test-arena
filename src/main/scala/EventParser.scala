@@ -2,9 +2,6 @@ import domain._
 
 trait EventParser {
 
-  val toEvents: Seq[String] => ParsedEventsResult =
-    _.map(toEvent).foldLeft(ParsedEventsResult.empty)(_ + _)
-
   val parseEvent: String => EventParsed =
     rawEvent => EventParsed(toEvent(rawEvent))
 

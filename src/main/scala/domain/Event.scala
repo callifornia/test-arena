@@ -3,20 +3,27 @@ package domain
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
-
-case class TeamOne(amount: Amount)
-case class TeamTwo(amount: Amount)
-case class PointScored(amount: Amount)
-case class ElapsedMatchTime(duration: Duration) extends AnyVal {
-  def gt(another: ElapsedMatchTime): Boolean =
-    duration.gt(another.duration)
-}
+trait Team
+case class TeamOne(amount: Amount) extends Team
+case class TeamTwo(amount: Amount) extends Team
+case class PointScored(amount: Amount) // 1 - 3
+case class ElapsedMatchTime(duration: Duration) extends AnyVal
 case class RawEvent(event: String)
 
+case class Score(value: Int) extends AnyVal
 
 sealed trait TeamScored
 case object FirstTeam extends TeamScored
 case object SecondTeam extends TeamScored
+
+
+case class Event (teamOne: TeamOne,
+                  teamTwo: TeamTwo,
+                  pointScored: PointScored,
+                  elapsedMatchTime: ElapsedMatchTime,
+                  teamScored: TeamScored,
+                  rawEvent: RawEvent)
+
 
 object TeamScored {
   val TeamOne: Int = 0
@@ -43,13 +50,32 @@ object MatchState {
   val empty: MatchState = MatchState(Seq.empty[Event])
 }
 
+case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Seq[ValidationError]) {
 
-case class Event (teamOne: TeamOne,
-                  teamTwo: TeamTwo,
-                  pointScored: PointScored,
-                  elapsedMatchTime: ElapsedMatchTime,
-                  teamScored: TeamScored,
-                  rawEvent: RawEvent)
+  def +(maybeEvent: Either[ValidationError, Event]): MatchStateAccumulator =
+    maybeEvent match {
+      case Left(inconsistentEvent) => copy(inconsistentEvents = inconsistentEvents :+ inconsistentEvent)
+      case Right(event) => copy(matchState = matchState + event)
+    }
+
+  def +(inconsistentEvent: ValidationError): MatchStateAccumulator = this.+(Left(inconsistentEvent))
+  def +(event: Event): MatchStateAccumulator =
+    copy(matchState = matchState + event, inconsistentEvents = inconsistentEvents.filterNot(_.event == event))
+
+  def ++(anotherStateAccumulator: MatchStateAccumulator): MatchStateAccumulator =
+    copy(
+      matchState = matchState ++ anotherStateAccumulator.matchState,
+      inconsistentEvents =
+        (inconsistentEvents ++ anotherStateAccumulator.inconsistentEvents)
+          .distinct
+          .filterNot(e => (anotherStateAccumulator.matchState.events ++ matchState.allEvents()).contains(e.event))
+    )
+
+
+  def containsUnordered(): Boolean = collectUnordered().nonEmpty
+  def collectUnordered(amount: Int = Int.MaxValue): Seq[Event] = inconsistentEvents.collect{case e: EventInWrongOrder  => e.event}
+}
+
 
 
 object Event {
@@ -94,8 +120,7 @@ object EventInBitFormat {
     rawEvent =>
       Try(Integer.decode(rawEvent).toInt.toBinaryString) match {
         case Success(value) => Right(value)
-        case Failure(ex: Exception) => Left(FailedToDecodeEvent(ex))
-        case Failure(th: Throwable) => throw th
+        case _ => Left(FailedToDecodeEvent(new Exception("asd")))
       }
 
 
@@ -123,31 +148,7 @@ object ParsedEventsResult {
 }
 
 
-case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Seq[ValidationError]) {
 
-  def +(maybeEvent: Either[ValidationError, Event]): MatchStateAccumulator =
-    maybeEvent match {
-      case Left(inconsistentEvent) => copy(inconsistentEvents = inconsistentEvents :+ inconsistentEvent)
-      case Right(event) => copy(matchState = matchState + event)
-    }
-
-  def +(inconsistentEvent: ValidationError): MatchStateAccumulator = this.+(Left(inconsistentEvent))
-  def +(event: Event): MatchStateAccumulator =
-    copy(matchState = matchState + event, inconsistentEvents = inconsistentEvents.filterNot(_.event == event))
-
-  def ++(anotherStateAccumulator: MatchStateAccumulator): MatchStateAccumulator =
-    copy(
-      matchState = matchState ++ anotherStateAccumulator.matchState,
-      inconsistentEvents =
-        (inconsistentEvents ++ anotherStateAccumulator.inconsistentEvents)
-          .distinct
-          .filterNot(e => (anotherStateAccumulator.matchState.events ++ matchState.allEvents()).contains(e.event))
-          )
-
-
-  def containsUnordered(): Boolean = collectUnordered().nonEmpty
-  def collectUnordered(amount: Int = Int.MaxValue): Seq[Event] = inconsistentEvents.collect{case e: EventInWrongOrder  => e.event}
-}
 
 object MatchStateAccumulator {
   def empty: MatchStateAccumulator =
@@ -155,5 +156,4 @@ object MatchStateAccumulator {
 }
 
 
-// akka-stream
 case class EventParsed(event: Either[Error, Event])

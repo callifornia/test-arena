@@ -1,8 +1,9 @@
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import akka.stream.IOResult
-import akka.stream.scaladsl.{FileIO, Flow, Framing, Sink, Source}
+import akka.stream.scaladsl.GraphDSL.Implicits.SourceShapeArrow
+import akka.stream.{ClosedShape, IOResult}
+import akka.stream.scaladsl.{FileIO, Flow, Framing, GraphDSL, RunnableGraph, Sink, Source}
 import akka.util.ByteString
 import domain.{Event, EventInWrongOrder, MatchState, MatchStateAccumulator, ValidationError}
 
@@ -34,7 +35,11 @@ object MainStream {
         case Right(value) => value :: Nil
       })
 
-
+  /*
+  *
+  * 1,2,3,4,5
+  *   1,2,3
+  * */
   val validateEventConsistency: Flow[Event, Event, NotUsed] =
     Flow[Event]
       .statefulMapConcat {() =>
@@ -64,7 +69,7 @@ object MainStream {
       .foldLeft(MatchStateAccumulator.empty)((acc, el) =>
         acc + EventValidationStreamWay.validate(el, acc.matchState)) match {
       case MatchStateAccumulator(event, error) if event.isLessThanOne() => MatchStateAccumulator(MatchState.empty, error)
-      case m@MatchStateAccumulator(_, _)                                => m
+      case m@MatchStateAccumulator(_, _) => m
     }
 
 
@@ -72,11 +77,29 @@ object MainStream {
   val sink = Sink.foreach(println)
 
 
-  def main(args: Array[String]): Unit = {
-    source("src/main/resources/sample2.txt")
+  def main(args: Array[String]): Unit =
+    runGraph("src/main/resources/sample2.txt").run()
+
+
+  def flowWay(sourceFileName: String) =
+    source(sourceFileName)
       .via(filterOutCorruptedEvents)
       .via(validateEventConsistency)
       .via(toJson)
       .runWith(sink)
-  }
+
+
+  def runGraph(sourceFileName: String): RunnableGraph[NotUsed] =
+    RunnableGraph.fromGraph(
+      GraphDSL.create() {implicit builder =>
+        val readRawEvent = builder.add(source(sourceFileName))
+        val parseAndFilterOutCorrupted = builder.add(filterOutCorruptedEvents)
+        val filterOutNonConsistent = builder.add(validateEventConsistency)
+        val convertToJson = builder.add(toJson)
+        val output = builder.add(sink)
+
+        readRawEvent ~> parseAndFilterOutCorrupted ~> filterOutNonConsistent ~> convertToJson ~> output
+        ClosedShape
+      }
+    )
 }
