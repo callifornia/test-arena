@@ -17,7 +17,7 @@ rest are invalid matchState:
 
 Event(ElapsedMatchTime(168 seconds)  PointScored(Amount(1))  RawEvent(0x5404059)  FirstTeam   TeamOne(Amount(8))  TeamTwo(Amount(11)))
 Event(ElapsedMatchTime(215 seconds)  PointScored(Amount(2))  RawEvent(0x6b8506a)  FirstTeam   TeamOne(Amount(10))  TeamTwo(Amount(13)))
-Event(ElapsedMatchTime(234 seconds)  PointScored(Amount(0))  RawEvent(0x750706c)  SecondTeam  TeamOne(Amount(14))  TeamTwo(Amount(13)))
+Event(ElapsedMatchTime(234 seconds)  PointScored(Amount(0))  RawEvent(0x750706c)  SecondTeam  TeamOne(Amount(14))  TeamTwo(Amount(13))) // wrong
 
 
 Event(ElapsedMatchTime(251 seconds)  PointScored(Amount(2))  RawEvent(0x7d8507e)  SecondTeam  TeamOne(Amount(10))  TeamTwo(Amount(15)))

@@ -125,10 +125,14 @@ case class MatchStateAccumulator(matchState: MatchState, inconsistentEvents: Map
   def +(event: Event): MatchStateAccumulator = copy(matchState = matchState + event, inconsistentEvents = inconsistentEvents - event)
   def +(event: Event, error: Error): MatchStateAccumulator = copy(inconsistentEvents = inconsistentEvents + (event -> error))
   def containsUnordered(): Boolean = collectUnordered().nonEmpty
-  def collectUnordered(): Seq[Event] = inconsistentEvents.values.collect{case e: EventInWrongOrder  => e.event}.toSeq
+  def collectUnordered(): List[Event] = inconsistentEvents.values.collect{case e: EventInWrongOrder  => e.event}.toList.sortBy(_.elapsedMatchTime.duration)
 }
 
 object MatchStateAccumulator {
   def empty: MatchStateAccumulator =
     MatchStateAccumulator(MatchState.empty, Map.empty[Event, Error])
 }
+
+
+// akka-stream
+case class EventParsed(event: Either[Error, Event])

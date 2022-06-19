@@ -10,6 +10,7 @@ case class RawEventDataCorrupted(value: String, ex: Exception) extends Error
 sealed trait ValidationError extends Error
 case class EventInWrongOrder(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class EventWithZeroScored(event: Event, latestEvent: Option[Event]) extends ValidationError
+case class EventWithZeroAndWrongCalculation(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class DuplicatedEvent(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class EventMatchTimeInPast(event: Event, latestEvent: Option[Event]) extends ValidationError
 case class WrongPointScoredCalculation(event: Event, latestEvent: Option[Event]) extends ValidationError

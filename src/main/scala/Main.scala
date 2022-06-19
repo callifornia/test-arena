@@ -4,23 +4,6 @@ import converter.Json.JsonConverterSyntax
 
 object Main {
 
-  /*
-  * -> run main method and all valid events which are going to be produced down to the stream is going to be printed
-  *   into the console in json format.
-  *
-  * -> `matchStateSample1` and `matchStateSample2` - holds match state based on events consumed from the files
-  *   `simple1.txt` and `simple2.txt`. `simple1.txt` and `simple2.txt` files can be found in `src/main/resources`
-  *
-  * -> `MatchStateAccumulator` - container which hold `matchState` and `inconsistentEvents`
-  *    MatchStateAccumulator.matchState.latest()        -> latest Event
-  *    MatchStateAccumulator.matchState.latest(n: Int)  -> latest n Events
-  *    MatchStateAccumulator.matchState.allEvents()     -> all valid events
-  *    MatchStateAccumulator.matchState.+(event: Event) -> add an Event
-  *
-  *    MatchStateAccumulator.inconsistentEvents         -> all inconsistency events collected during processing
-  *
-  * -> start point to discover: `processEvents()`
-  * */
   def main(array: Array[String]): Unit = {
     println("Start processing event from [simple1.txt]")
     val matchStateSample1: MatchStateAccumulator = processEvents("sample1.txt")
