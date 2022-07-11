@@ -77,10 +77,6 @@ object MainStream {
   val sink = Sink.foreach(println)
 
 
-  def main(args: Array[String]): Unit =
-    runGraph("src/main/resources/sample2.txt").run()
-
-
   def flowWay(sourceFileName: String) =
     source(sourceFileName)
       .via(filterOutCorruptedEvents)
@@ -102,4 +98,15 @@ object MainStream {
         ClosedShape
       }
     )
+
+
+  /*
+  * write shared events into the kafka
+  * and write events into the DB
+  *
+  * */
+  def main(args: Array[String]): Unit =
+    runGraph("src/main/resources/sample2.txt").run()
+
+
 }
