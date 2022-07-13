@@ -18,7 +18,7 @@ trait MainLogic {
 
   def flowWay(sourceFileName: String)(implicit m: Materializer) =
     source(sourceFileName)
-      .via(filterOutCorruptedEvents)
+      .via(parseEvents)
       .via(validateEventConsistency)
       .via(toJson)
       .runWith(sink)
@@ -28,7 +28,7 @@ trait MainLogic {
     RunnableGraph.fromGraph(
       GraphDSL.create() {implicit builder =>
         val readRawEvent = builder.add(source(sourceFileName))
-        val parseAndFilterOutCorrupted = builder.add(filterOutCorruptedEvents)
+        val parseAndFilterOutCorrupted = builder.add(parseEvents)
         val filterOutNonConsistent = builder.add(validateEventConsistency)
         val convertToJson = builder.add(toJson)
         val output = builder.add(sink)
@@ -47,7 +47,7 @@ trait MainLogic {
         .map(_.utf8String)
 
 
-  private val filterOutCorruptedEvents: Flow[String, Event, NotUsed] =
+  val parseEvents: Flow[String, Event, NotUsed] =
     Flow[String]
       .map(EventParser.parseEvent)
       .mapConcat(_.event match {
@@ -91,7 +91,7 @@ trait MainLogic {
     }
 
 
-  private val toJson: Flow[Event, String, NotUsed] =
+  val toJson: Flow[Event, String, NotUsed] =
     Flow[Event].map(_.toJsonValue.stringify).map(e => Console.GREEN + e + Console.RESET)
 
 
