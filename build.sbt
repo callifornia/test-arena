@@ -1,5 +1,5 @@
 enablePlugins(JavaAppPackaging, AshScriptPlugin)
-version := "version_broker"
+version := "stream_version"
 scalaVersion := "2.13.8"
 val scalaTestVersion = "3.0.8"
 val AkkaVersion = "2.6.19"
