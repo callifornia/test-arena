@@ -25,13 +25,12 @@ object MainStream {
     GraphDSL.create() { implicit builder =>
       val input = builder.add(readFromKafka)
       val parseEvent = builder.add(parseEvents)
-      val convertToJson = builder.add(toJson)
-      val convertToJson2 = builder.add(toJson)
       val validateEvent = builder.add(validateEventConsistency)
       val writeToGeneralEventTopic = builder.add(writeToKafka(allEventsTopic, eventKey))
       val writeToConsistentEventTopic = builder.add(writeToKafka(consistentEventTopic, eventKey))
-      val output = builder.add(kafkaSink)
-      val output2 = builder.add(kafkaSink)
+
+      val (convertToJson, convertToJson2) = (builder.add(toJson), builder.add(toJson))
+      val (output, output2)  = (builder.add(kafkaSink), builder.add(kafkaSink))
 
       val broadcast = builder.add(Broadcast[Event](2))
 
