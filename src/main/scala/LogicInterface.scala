@@ -10,10 +10,11 @@ import java.nio.file.Paths
 import scala.concurrent.Future
 
 
-trait MainLogic {
+trait LogicInterface {
 
 
   private val amountsEventsToReset = 3
+  private val sink = Sink.foreach(println)
 
 
   def flowWay(sourceFileName: String)(implicit m: Materializer) =
@@ -58,7 +59,7 @@ trait MainLogic {
       })
 
 
-  private val validateEventConsistency: Flow[Event, Event, NotUsed] =
+  val validateEventConsistency: Flow[Event, Event, NotUsed] =
     Flow[Event]
       .statefulMapConcat {() =>
         var accumulator = MatchStateAccumulator.empty
@@ -91,11 +92,7 @@ trait MainLogic {
     }
 
 
-  val toJson: Flow[Event, String, NotUsed] =
-    Flow[Event].map(_.toJsonValue.stringify).map(e => Console.GREEN + e + Console.RESET)
-
-
-  private val sink = Sink.foreach(println)
+  val toJson: Flow[Event, String, NotUsed] = Flow[Event].map(_.toJsonValue.stringify)
 }
 
-object MainLogic extends MainLogic
+object LogicInterface extends LogicInterface

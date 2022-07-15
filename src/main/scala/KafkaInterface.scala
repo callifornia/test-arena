@@ -1,4 +1,3 @@
-import KafkaInterface.bootStrapServer
 import akka.NotUsed
 import akka.actor.ClassicActorSystemProvider
 import akka.kafka.{ConsumerSettings, ProducerSettings, Subscriptions}
@@ -14,9 +13,11 @@ import scala.concurrent.duration.DurationInt
 trait KafkaInterface {
 
   private val bootStrapServer = "broker:29092"
+//  private val bootStrapServer = "localhost:9092"
   val rawEventsReadTopic = "events_raw"
   val allEventsTopic = "events_all"
   val consistentEventTopic = "event_consistent"
+  val eventKey = "event"
 
 
   def readFromKafka(implicit system: ClassicActorSystemProvider) =
