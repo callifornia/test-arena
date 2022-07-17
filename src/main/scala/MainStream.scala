@@ -35,6 +35,7 @@ object MainStream {
       val broadcast = builder.add(Broadcast[Event](2))
 
 
+
       input ~> parseEvent ~> broadcast
       broadcast.out(0) ~> convertToJson ~> writeToGeneralEventTopic ~> output
       broadcast.out(1) ~> validateEvent ~> convertToJson2  ~> writeToConsistentEventTopic ~> output2
